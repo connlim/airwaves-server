@@ -20,7 +20,7 @@ module.exports.run = function (worker) {
     // Some sample logic to show how to handle client events,
     // replace this with your own logic
 
-    socket.emit('timeping', (new Date()).getTime());
+    // socket.emit('timeping', (new Date()).getTime());
 
     socket.on('timeping', function(starttime){
       socket.emit('timepong', starttime);
