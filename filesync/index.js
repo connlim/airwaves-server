@@ -62,7 +62,7 @@ app.post('/group/genid', function(req, res){
       console.log(make_err);
       res.status(500).send("Error creating group");
     }else{
-      rClient.hset(req.body.groupid, 'exists', true, function(red_err, red_res){
+      rClient.hset(groupid, 'exists', '1', function(red_err, red_res){
         res.status(200).send(groupid);
       });
     }
@@ -87,7 +87,7 @@ app.post('/group', function(req, res){
       console.log(make_err);
       res.status(500).send("Error creating group");
     }else{
-      rClient.hset(req.body.groupid, 'exists', true, function(red_err, red_res){
+      rClient.hset(req.body.groupid, 'exists', '1', function(red_err, red_res){
         res.status(200).send(groupid);
       });
     }
@@ -95,8 +95,8 @@ app.post('/group', function(req, res){
 });
 
 app.get('/:groupid/exists', function(req, res){
-  rClient.hget(req.body.groupid, 'exists', function(red_err, red_res){
-    res.status(200).send(red_res ? 1 : 0);
+  rClient.hget(req.params.groupid, 'exists', function(red_err, red_res){
+    res.status(200).send(red_res ? '1' : '0');
   });
 });
 

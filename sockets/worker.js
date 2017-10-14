@@ -20,6 +20,8 @@ module.exports.run = function (worker) {
     // Some sample logic to show how to handle client events,
     // replace this with your own logic
 
+    socket.emit('timeping', (new Date()).getTime());
+
     socket.on('sampleClientEvent', function (data) {
       count++;
       console.log('Handled sampleClientEvent', data);
