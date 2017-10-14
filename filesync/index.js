@@ -35,10 +35,28 @@ app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({extended : true}));
 app.use(cors());
 
+/**
+ * @api {get} / Ping API
+ * @apiName Ping
+ * @apiGroup General
+ *
+ * @apiSuccess {String} res Received at Filesync API.
+ */
 app.get('/', function(req, res){
   res.status(200).send("Received at Filesync API.");
 });
 
+/**
+ * @api {post} /group Add group
+ * @apiName AddGroup
+ * @apiGroup Group
+ *
+ * @apiParam {String} groupid ID of the group. Generate client-side.
+ *
+ * @apiSuccess {String} groupid ID of the group.
+ *
+ * @apiError {String} 500 Error creating group.
+ */
 app.post('/group', function(req, res){
   var groupid = req.body.groupid;
   mClient.makeBucket(encodeURI(groupid), 'ap-southeast-1', function(make_err){
@@ -51,6 +69,21 @@ app.post('/group', function(req, res){
   });
 });
 
+/**
+ * @api {post} /song Add song to a group. Updates current song to this.
+ * @apiName AddSong
+ * @apiGroup Song
+ *
+ * @apiParam {String} groupid ID of the group song is added to.
+ * @apiParam {File} file Songfile uploaded.
+ *
+ * @apiSuccess {String} message Success.
+ *
+ * @apiError {String} 404 No file found.
+ * @apiError {String} 404 No group id found.
+ * @apiError {String} 404 Group does not exist.
+ * @apiError {String} 500 Error storing file.
+ */
 app.post('/song', upload.single('file'), function(req, res){
   if(!req.file){
     res.status(404).send("No file found.");
@@ -84,6 +117,19 @@ app.post('/song', upload.single('file'), function(req, res){
   }
 });
 
+/**
+ * @api {get} /:groupid/song/:songid Gets a song by its id (hash) in a group.
+ * @apiName GetSong
+ * @apiGroup Song
+ *
+ * @apiParam {String} groupid ID of the group song was added to.
+ * @apiParam {String} songid Hash of the songfile.
+ *
+ * @apiSuccess {File} song The song file.
+ *
+ * @apiError {String} 400 No such file.
+ * @apiError {String} 500 Error retrieving file.
+ */
 app.get('/:groupid/song/:songid', function(req, res){
   mClient.getObject(req.params.groupid, req.params.songid, function(err, stream){
     if(err){
@@ -98,20 +144,17 @@ app.get('/:groupid/song/:songid', function(req, res){
   });
 });
 
-// app.get('/exists/:groupid/:songid', function(req, res){
-//   mClient.getObject(req.params.groupid, req.params.songid, function(err, stream){
-//     if(err){
-//       if(err.code == 'NoSuchKey'){
-//         res.status(400).send("No such file");
-//       }else{
-//         res.status(500).send("Error retrieving file");
-//       }
-//     }else{
-//       res.status(200).send("Exists");
-//     }
-//   });
-// });
-
+/**
+ * @api {get} /:groupid/playing Gets hash of current playing song.
+ * @apiName GetPlaying
+ * @apiGroup Song
+ *
+ * @apiParam {String} groupid ID of the group song is playing in.
+ *
+ * @apiSuccess {String} currentsong Hash of current song file.
+ *
+ * @apiError {String} 400 Error retrieving current song.
+ */
 app.get('/:groupid/playing', function(req, res){
   rClient.hget(req.params.groupid, 'currentsong', function(get_err, currentsong){
     if(get_err){
