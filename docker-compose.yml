@@ -1,0 +1,42 @@
+version: "3"
+services:
+  minio:
+    image: minio/minio:latest
+    ports:
+      - "9000:9000" #For debug
+    networks:
+      - minionet
+    environment:
+      - MINIO_ACCESS_KEY=minioaccesskey
+      - MINIO_SECRET_KEY=miniosecretkey
+    volumes:
+      - ./minio:/export
+    command: minio server /export
+  redis:
+    image: redis
+    ports:
+      - "6379:6379" #For debug
+    networks:
+      - redisnet
+  filesync:
+    build: ./filesync
+    tty: true
+    environment:
+      - FILESYNC_PORT=10201
+      - MINIO_ACCESS_KEY=minioaccesskey
+      - MINIO_SECRET_KEY=miniosecretkey
+    ports:
+      - "10201:10201"
+    depends_on:
+      - minio
+      - redis
+    networks:
+      - minionet
+      - redisnet
+  socketcluster:
+    build: ./sockets
+    ports:
+      - "10202:8000"
+networks:
+  minionet:
+  redisnet:
