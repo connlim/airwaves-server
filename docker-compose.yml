@@ -33,10 +33,6 @@ services:
     networks:
       - minionet
       - redisnet
-  # socketcluster:
-  #   build: ./sockets
-  #   ports:
-  #     - "10202:8000"
   sockets:
     build: ./sockets2
     tty: true

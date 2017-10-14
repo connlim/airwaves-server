@@ -128,31 +128,40 @@ app.post('/song', upload.single('file'), function(req, res){
     res.status(404).send("No file found.");
   }else if(!req.body.groupid){
     res.status(404).send("No group id found.");
+  }else if(!req.body.id){
+    res.status(401).send("No master id found.");
   }else{
-    mClient.bucketExists(req.body.groupid, function(exists_err){
-      if(exists_err){
-        res.status(404).send("Group does not exist.")
+    rClient.hget(req.body.groupid, 'master', function(id_err, id){
+      if(id != req.body.id){
+        res.status(401).send("Invalid master id.");
       }else{
-        var rs = streamifier.createReadStream(req.file.buffer);
-        var shasum = crypto.createHash('sha256');
-        rs.on('data', function(data){
-          shasum.update(data);
-        });
-        rs.on('end', function(){
-          var hash = shasum.digest('hex');
-          mClient.putObject(req.body.groupid, hash, req.file.buffer, function(put_err, etag){
-            if(put_err){
-              console.log(put_err);
-              res.status(500).send("Error storing file");
-            }else{
-              rClient.hset(req.body.groupid, 'currentsong', hash, function(red_err, red_res){
-                res.status(200).send('Success');
+        mClient.bucketExists(req.body.groupid, function(exists_err){
+          if(exists_err){
+            res.status(404).send("Group does not exist.")
+          }else{
+            var rs = streamifier.createReadStream(req.file.buffer);
+            var shasum = crypto.createHash('sha256');
+            rs.on('data', function(data){
+              shasum.update(data);
+            });
+            rs.on('end', function(){
+              var hash = shasum.digest('hex');
+              mClient.putObject(req.body.groupid, hash, req.file.buffer, function(put_err, etag){
+                if(put_err){
+                  console.log(put_err);
+                  res.status(500).send("Error storing file");
+                }else{
+                  rClient.hset(req.body.groupid, 'currentsong', hash, function(red_err, red_res){
+                    res.status(200).send('Success');
+                  });
+                }
               });
-            }
-          });
+            });
+          }
         });
       }
     });
+
   }
 });
 

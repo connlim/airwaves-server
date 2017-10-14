@@ -8,9 +8,14 @@ io.on('connection', function(socket){
     socket.emit('timepong', starttime);
   });
   socket.on('play', function(data){
-    io.emit('play', data);
-  })
-
+    io.to(data.group).emit('play', data.time);
+  });
+  socket.on('joingroup', function(group){
+    socket.join(group);
+  });
+  socket.on('leavegroup', function(group){
+    socket.leave(group);
+  });
 });
 
 http.listen(process.env.SOCKET_PORT, function(err){
