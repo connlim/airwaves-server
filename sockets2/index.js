@@ -8,7 +8,7 @@ io.on('connection', function(socket){
     socket.emit('timepong', starttime);
   });
   socket.on('play', function(data){
-    socket.to(data.group).emit('play', data.time);
+    io.in(data.group).emit('play', data.time);
   });
   socket.on('joingroup', function(group){
     socket.join(group);
