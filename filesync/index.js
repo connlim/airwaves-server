@@ -48,6 +48,27 @@ app.get('/', function(req, res){
 
 /**
  * @api {post} /group Add group
+ * @apiName AddGroupGen
+ * @apiGroup Group
+ *
+ * @apiSuccess {String} groupid ID of the group.
+ *
+ * @apiError {String} 500 Error creating group.
+ */
+app.post('/group/genid', function(req, res){
+  var groupid = hri.random();
+  mClient.makeBucket(encodeURI(groupid), 'ap-southeast-1', function(make_err){
+    if(make_err){
+      console.log(make_err);
+      res.status(500).send("Error creating group");
+    }else{
+      res.status(200).send(groupid);
+    }
+  });
+});
+
+/**
+ * @api {post} /group Add group, autogen group id
  * @apiName AddGroup
  * @apiGroup Group
  *
