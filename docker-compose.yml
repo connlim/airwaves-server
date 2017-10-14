@@ -39,6 +39,7 @@ services:
   #     - "10202:8000"
   sockets:
     build: ./sockets2
+    tty: true
     environment:
       - SOCKET_PORT=10202
     ports:

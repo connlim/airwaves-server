@@ -1,5 +1,4 @@
-var app = require("express")();
-var http = require("http").Server(app);
+var http = require("http").createServer();
 var io = require("socket.io")(http);
 
 var colors = require("colors");
@@ -14,6 +13,6 @@ io.on('connection', function(socket){
 
 });
 
-http.listen(process.env.SOCKET_PORT, function(){
-  console.log(("Socket up at " + process.env.SOCKET_PORT).rainbow);
+http.listen(process.env.SOCKET_PORT, function(err){
+  err ? console.error(err) : console.log(("Socket up at " + process.env.SOCKET_PORT).rainbow);
 });
