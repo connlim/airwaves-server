@@ -10,6 +10,12 @@ io.on('connection', function(socket){
   socket.on('play', function(data){
     io.in(data.group).emit('play', data.time);
   });
+  socket.on('new_song', function(data){
+    socket.in(data.group).emit('new_song', data.song);
+  });
+  socket.on('remove_song', function(data){
+    socket.in(data.group).emit('remove_song', data.index);
+  });
   socket.on('joingroup', function(group){
     socket.join(group);
   });
