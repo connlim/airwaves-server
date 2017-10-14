@@ -22,6 +22,10 @@ module.exports.run = function (worker) {
 
     socket.emit('timeping', (new Date()).getTime());
 
+    socket.on('timeping', function(starttime){
+      socket.emit('timepong', starttime);
+    });
+
     socket.on('sampleClientEvent', function (data) {
       count++;
       console.log('Handled sampleClientEvent', data);
