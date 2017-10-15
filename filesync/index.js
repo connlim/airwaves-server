@@ -123,13 +123,13 @@ app.get('/:groupid/exists', function(req, res){
  * @apiError {String} 404 Group does not exist.
  * @apiError {String} 500 Error storing file.
  */
-app.post('/song', upload.single('file'), function(req, res){
+app.post('/:groupid/song', upload.single('file'), function(req, res){
   if(!req.file){
     res.status(404).send("No file found.");
   }else if(!req.body.groupid){
     res.status(404).send("No group id found.");
   }else{
-    mClient.bucketExists(req.body.groupid, function(exists_err){
+    mClient.bucketExists(req.params.groupid, function(exists_err){
       if(exists_err){
         res.status(404).send("Group does not exist.")
       }else{
@@ -140,12 +140,12 @@ app.post('/song', upload.single('file'), function(req, res){
         });
         rs.on('end', function(){
           var hash = shasum.digest('hex');
-          mClient.putObject(req.body.groupid, hash, req.file.buffer, function(put_err, etag){
+          mClient.putObject(req.params.groupid, hash, req.file.buffer, function(put_err, etag){
             if(put_err){
               console.log(put_err);
               res.status(500).send("Error storing file");
             }else{
-              rClient.hset(req.body.groupid, 'currentsong', hash, function(red_err, red_res){
+              rClient.hset(req.params.groupid, 'currentsong', hash, function(red_err, red_res){
                 res.status(200).send('Success');
               });
             }
