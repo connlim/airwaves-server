@@ -40,6 +40,10 @@ services:
       - SOCKET_PORT=10202
     ports:
       - "10202:10202"
+    depends_on:
+      - redis
+    networks:
+      - redisnet
 networks:
   minionet:
   redisnet:

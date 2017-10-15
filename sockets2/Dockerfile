@@ -8,4 +8,4 @@ RUN npm install
 
 EXPOSE $SOCKET_PORT
 
-CMD ["node", "index.js"]
+CMD ["./wait-for-it.sh", "redis:6379", "--", "node", "index.js"]

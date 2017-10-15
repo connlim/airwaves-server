@@ -3,6 +3,12 @@ var io = require("socket.io")(http);
 
 var colors = require("colors");
 
+var redis = require("redis");
+var rClient = redis.createClient({
+  host : 'redis',
+  port : 6379
+});
+
 io.on('connection', function(socket){
   socket.on('timeping', function(starttime){
     socket.emit('timepong', starttime);
@@ -11,7 +17,18 @@ io.on('connection', function(socket){
     io.in(data.group).emit('play', data.time);
   });
   socket.on('new_song', function(data){
-   socket.to(data.group).emit('new_song', data.song);
+    redis.hget(data.group, 'playlist', function(get_err, playlist){
+      if(playlist != ''){
+        playlist = JSON.stringify([data.song]);
+      }else{
+        playlist = JSON.parse(playlist);
+        playlist.push(data.song)
+        playlist = JSON.stringify(playlist);
+      }
+      redis.hset(data.group, 'playlist', playlist, function(set_err, playlist){
+        socket.to(data.group).emit('new_song', data.song);
+      });
+    });
   });
   socket.on('remove_song', function(data){
     socket.in(data.group).emit('remove_song', data.index);
