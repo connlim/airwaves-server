@@ -17,7 +17,7 @@ io.on('connection', function(socket){
     io.in(data.group).emit('play', data.time);
   });
   socket.on('new_song', function(data){
-    redis.hget(data.group, 'playlist', function(get_err, playlist){
+    rClient.hget(data.group, 'playlist', function(get_err, playlist){
       if(playlist != ''){
         playlist = JSON.stringify([data.song]);
       }else{
@@ -25,7 +25,7 @@ io.on('connection', function(socket){
         playlist.push(data.song)
         playlist = JSON.stringify(playlist);
       }
-      redis.hset(data.group, 'playlist', playlist, function(set_err, playlist){
+      rClient.hset(data.group, 'playlist', playlist, function(set_err, playlist){
         socket.to(data.group).emit('new_song', data.song);
       });
     });
