@@ -126,7 +126,7 @@ app.get('/:groupid/exists', function(req, res){
 app.post('/:groupid/song', upload.single('file'), function(req, res){
   if(!req.file){
     res.status(404).send("No file found.");
-  }else if(!req.body.groupid){
+  }else if(!req.params.groupid){
     res.status(404).send("No group id found.");
   }else{
     mClient.bucketExists(req.params.groupid, function(exists_err){
