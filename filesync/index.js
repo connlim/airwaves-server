@@ -128,40 +128,31 @@ app.post('/song', upload.single('file'), function(req, res){
     res.status(404).send("No file found.");
   }else if(!req.body.groupid){
     res.status(404).send("No group id found.");
-  }else if(!req.body.id){
-    res.status(401).send("No master id found.");
   }else{
-    rClient.hget(req.body.groupid, 'master', function(id_err, id){
-      if(id != req.body.id){
-        res.status(401).send("Invalid master id.");
+    mClient.bucketExists(req.body.groupid, function(exists_err){
+      if(exists_err){
+        res.status(404).send("Group does not exist.")
       }else{
-        mClient.bucketExists(req.body.groupid, function(exists_err){
-          if(exists_err){
-            res.status(404).send("Group does not exist.")
-          }else{
-            var rs = streamifier.createReadStream(req.file.buffer);
-            var shasum = crypto.createHash('sha256');
-            rs.on('data', function(data){
-              shasum.update(data);
-            });
-            rs.on('end', function(){
-              var hash = shasum.digest('hex');
-              mClient.putObject(req.body.groupid, hash, req.file.buffer, function(put_err, etag){
-                if(put_err){
-                  console.log(put_err);
-                  res.status(500).send("Error storing file");
-                }else{
-                  rClient.hset(req.body.groupid, 'currentsong', hash, function(red_err, red_res){
-                    res.status(200).send('Success');
-                  });
-                }
+        var rs = streamifier.createReadStream(req.file.buffer);
+        var shasum = crypto.createHash('sha256');
+        rs.on('data', function(data){
+          shasum.update(data);
+        });
+        rs.on('end', function(){
+          var hash = shasum.digest('hex');
+          mClient.putObject(req.body.groupid, hash, req.file.buffer, function(put_err, etag){
+            if(put_err){
+              console.log(put_err);
+              res.status(500).send("Error storing file");
+            }else{
+              rClient.hset(req.body.groupid, 'currentsong', hash, function(red_err, red_res){
+                res.status(200).send('Success');
               });
-            });
-          }
+            }
+          });
         });
       }
     });
-
   }
 });
 
@@ -188,6 +179,33 @@ app.get('/:groupid/song/:songid', function(req, res){
       }
     }else{
       stream.pipe(res);
+    }
+  });
+});
+
+/**
+ * @api {get} /:groupid/song/:songid Gets a song by its id (hash) in a group.
+ * @apiName GetSong
+ * @apiGroup Song
+ *
+ * @apiParam {String} groupid ID of the group song was added to.
+ * @apiParam {String} songid Hash of the songfile.
+ *
+ * @apiSuccess {File} song The song file.
+ *
+ * @apiError {String} 400 No such file.
+ * @apiError {String} 500 Error retrieving file.
+ */
+app.get('/:groupid/exists/:songid', function(req, res){
+  mClient.getObject(req.params.groupid, req.params.songid, function(err, stream){
+    if(err){
+      if(err.code == 'NoSuchKey'){
+        res.status(400).send("No such file");
+      }else{
+        res.status(500).send("Error retrieving file");
+      }
+    }else{
+      res.status(200).send('Exists');
     }
   });
 });
