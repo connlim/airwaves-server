@@ -218,7 +218,7 @@ app.get('/:groupid/playlist', function(req, res){
     if(get_err){
       res.status(400).send("Error retrieving current song.");
     }else{
-      res.status(200).send(playlist);
+      res.status(200).send(JSON.parse(playlist));
     }
   });
 });
