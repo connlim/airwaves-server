@@ -18,7 +18,7 @@ io.on('connection', function(socket){
   });
   socket.on('new_song', function(data){
     rClient.hget(data.group, 'playlist', function(get_err, playlist){
-      if(playlist != ''){
+      if(playlist == ''){
         playlist = JSON.stringify([data.song]);
       }else{
         playlist = JSON.parse(playlist);
