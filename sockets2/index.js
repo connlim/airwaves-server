@@ -18,12 +18,12 @@ io.on('connection', function(socket){
   });
   socket.on('new_song', function(data){
     rClient.hget(data.group, 'playlist', function(get_err, playlist){
-      if(playlist == ''){
-        playlist = JSON.stringify([data.song]);
-      }else{
-        playlist = JSON.parse(playlist);
-        playlist.push(data.song)
+      playlist = JSON.parse(playlist);
+      if(playlist){
+        playlist.push(data.song);
         playlist = JSON.stringify(playlist);
+      }else{
+        playlist = JSON.stringify([data.song]);      
       }
       rClient.hset(data.group, 'playlist', playlist, function(set_err, playlist){
         socket.to(data.group).emit('new_song', data.song);
@@ -32,6 +32,9 @@ io.on('connection', function(socket){
   });
   socket.on('remove_song', function(data){
     socket.in(data.group).emit('remove_song', data.index);
+  });
+  socket.on('song_end', function(group){
+
   });
   socket.on('joingroup', function(group){
     socket.join(group);
