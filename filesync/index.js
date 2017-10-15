@@ -213,6 +213,16 @@ app.get('/:groupid/playing', function(req, res){
   });
 });
 
+app.get('/:groupid/playlist', function(req, res){
+  rClient.hget(req.params.groupid, 'playlist', function(get_err, playlist){
+    if(get_err){
+      res.status(400).send("Error retrieving current song.");
+    }else{
+      res.status(200).send(playlist);
+    }
+  });
+});
+
 app.listen(process.env.FILESYNC_PORT, function(err){
   err ? console.error(err) : console.log(("Filesync API up at " + process.env.FILESYNC_PORT).rainbow);
 });
